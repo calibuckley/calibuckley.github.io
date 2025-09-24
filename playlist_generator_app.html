@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneSync - Personalized Playlist Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .slider-group {
+            margin: 20px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            cursor: pointer;
+            border: none;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .playlist-display {
+            margin-top: 40px;
+        }
+
+        .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .playlist-header h3 {
+            font-size: 1.8rem;
+            color: #4ecdc4;
+        }
+
+        .playlist-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .song-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .song-info h4 {
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .song-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .song-duration {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .playlist-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .taste-profile {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .taste-profile h4 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .taste-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .taste-tag {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 TuneSync</h1>
+            <p>Your personalized playlist generator powered by your unique music taste</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>🎯 Your Music Preferences</h2>
+                
+                <div class="form-group">
+                    <label for="favoriteArtists">Favorite Artists (comma separated):</label>
+                    <textarea id="favoriteArtists" placeholder="e.g. Taylor Swift, The Weeknd, Billie Eilish, Arctic Monkeys"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="topGenres">Preferred Genres:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pop" value="Pop">
+                            <label for="pop">Pop</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="rock" value="Rock">
+                            <label for="rock">Rock</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="hiphop" value="Hip-Hop">
+                            <label for="hiphop">Hip-Hop</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="electronic" value="Electronic">
+                            <label for="electronic">Electronic</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="indie" value="Indie">
+                            <label for="indie">Indie</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="jazz" value="Jazz">
+                            <label for="jazz">Jazz</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="classical" value="Classical">
+                            <label for="classical">Classical</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="rnb" value="R&B">
+                            <label for="rnb">R&B</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="musicAesthetic">Music Aesthetic/Vibe:</label>
+                    <select id="musicAesthetic">
+                        <option value="chill">Chill & Relaxed</option>
+                        <option value="energetic">Energetic & Upbeat</option>
+                        <option value="nostalgic">Nostalgic & Emotional</option>
+                        <option value="dreamy">Dreamy & Atmospheric</option>
+                        <option value="dark">Dark & Moody</option>
+                        <option value="happy">Happy & Positive</option>
+                        <option value="focused">Focused & Ambient</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ Playlist Settings</h2>
+                
+                <div class="form-group">
+                    <label for="playlistName">Playlist Name:</label>
+                    <input type="text" id="playlistName" placeholder="My Perfect Mix">
+                </div>
+
+                <div class="slider-group">
+                    <label>Playlist Length: <span id="lengthValue">20</span> songs</label>
+                    <input type="range" id="playlistLength" class="slider" min="10" max="50" value="20">
+                </div>
+
+                <div class="slider-group">
+                    <label>Discovery vs Familiarity: <span id="discoveryValue">Balanced</span></label>
+                    <input type="range" id="discoveryLevel" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>Energy Level: <span id="energyValue">Medium</span></label>
+                    <input type="range" id="energyLevel" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="playlistTheme">Playlist Theme:</label>
+                    <select id="playlistTheme">
+                        <option value="general">General Listening</option>
+                        <option value="workout">Workout</option>
+                        <option value="study">Study/Focus</option>
+                        <option value="party">Party</option>
+                        <option value="roadtrip">Road Trip</option>
+                        <option value="sleep">Sleep/Relaxation</option>
+                        <option value="morning">Morning Motivation</option>
+                    </select>
+                </div>
+
+                <button class="generate-btn" onclick="generatePlaylist()">
+                    🎵 Generate My Playlist
+                </button>
+            </div>
+        </div>
+
+        <div id="playlistResult" class="hidden">
+            <div id="loadingState" class="loading hidden">
+                <div class="loading-spinner"></div>
+                <p>Crafting your perfect playlist...</p>
+            </div>
+
+            <div id="playlistContent" class="playlist-display hidden">
+                <div class="playlist-header">
+                    <h3 id="generatedPlaylistName">Your Perfect Mix</h3>
+                    <div class="playlist-stats">
+                        <span id="songCount">20 songs</span>
+                        <span id="totalDuration">1h 23m</span>
+                    </div>
+                </div>
+
+                <div class="taste-profile">
+                    <h4>Your Music Taste Profile</h4>
+                    <div class="taste-tags" id="tasteTags"></div>
+                </div>
+
+                <div id="songList" class="song-list">
+                    <!-- Songs will be dynamically added here -->
+                </div>
+
+                <div class="playlist-actions">
+                    <button class="action-btn" onclick="regeneratePlaylist()">🔄 Regenerate</button>
+                    <button class="action-btn" onclick="savePlaylist()">💾 Save Playlist</button>
+                    <button class="action-btn" onclick="sharePlaylist()">📤 Share</button>
+                    <button class="action-btn" onclick="exportPlaylist()">📋 Export</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample song database with various artists and genres
+        const songDatabase = [
+            // Pop
+            { title: "Anti-Hero", artist: "Taylor Swift", genre: "Pop", duration: "3:20", energy: 60, vibe: "nostalgic" },
+            { title: "As It Was", artist: "Harry Styles", genre: "Pop", duration: "2:47", energy: 70, vibe: "nostalgic" },
+            { title: "Bad Habit", artist: "Steve Lacy", genre: "Pop", duration: "3:51", energy: 75, vibe: "chill" },
+            { title: "Flowers", artist: "Miley Cyrus", genre: "Pop", duration: "3:20", energy: 80, vibe: "happy" },
+            
+            // Rock
+            { title: "Do I Wanna Know?", artist: "Arctic Monkeys", genre: "Rock", duration: "4:32", energy: 75, vibe: "dark" },
+            { title: "Mr. Brightside", artist: "The Killers", genre: "Rock", duration: "3:42", energy: 85, vibe: "energetic" },
+            { title: "Somebody Told Me", artist: "The Killers", genre: "Rock", duration: "3:17", energy: 80, vibe: "energetic" },
+            { title: "R U Mine?", artist: "Arctic Monkeys", genre: "Rock", duration: "3:21", energy: 70, vibe: "dark" },
+            
+            // Hip-Hop
+            { title: "God's Plan", artist: "Drake", genre: "Hip-Hop", duration: "3:19", energy: 65, vibe: "chill" },
+            { title: "HUMBLE.", artist: "Kendrick Lamar", genre: "Hip-Hop", duration: "2:57", energy: 90, vibe: "energetic" },
+            { title: "Sicko Mode", artist: "Travis Scott", genre: "Hip-Hop", duration: "5:12", energy: 85, vibe: "dark" },
+            { title: "Life Is Good", artist: "Future ft. Drake", genre: "Hip-Hop", duration: "3:58", energy: 70, vibe: "chill" },
+            
+            // Electronic
+            { title: "Midnight City", artist: "M83", genre: "Electronic", duration: "4:03", energy: 80, vibe: "dreamy" },
+            { title: "Something About Us", artist: "Daft Punk", genre: "Electronic", duration: "3:51", energy: 40, vibe: "chill" },
+            { title: "Strobe", artist: "Deadmau5", genre: "Electronic", duration: "10:36", energy: 75, vibe: "focused" },
+            { title: "Breathe Me", artist: "Sia", genre: "Electronic", duration: "4:30", energy: 45, vibe: "nostalgic" },
+            
+            // Indie
+            { title: "Electric Feel", artist: "MGMT", genre: "Indie", duration: "3:49", energy: 75, vibe: "dreamy" },
+            { title: "Float On", artist: "Modest Mouse", genre: "Indie", duration: "3:27", energy: 70, vibe: "happy" },
+            { title: "Take Me Out", artist: "Franz Ferdinand", genre: "Indie", duration: "3:57", energy: 85, vibe: "energetic" },
+            { title: "Somebody That I Used to Know", artist: "Gotye", genre: "Indie", duration: "4:04", energy: 55, vibe: "nostalgic" },
+            
+            // R&B
+            { title: "Blinding Lights", artist: "The Weeknd", genre: "R&B", duration: "3:20", energy: 85, vibe: "energetic" },
+            { title: "good 4 u", artist: "Olivia Rodrigo", genre: "R&B", duration: "2:58", energy: 80, vibe: "energetic" },
+            { title: "Peaches", artist: "Justin Bieber", genre: "R&B", duration: "3:18", energy: 60, vibe: "chill" },
+            { title: "Levitating", artist: "Dua Lipa", genre: "R&B", duration: "3:23", energy: 85, vibe: "happy" },
+            
+            // More diverse tracks
+            { title: "Ocean Eyes", artist: "Billie Eilish", genre: "Pop", duration: "3:20", energy: 30, vibe: "dreamy" },
+            { title: "Bad Guy", artist: "Billie Eilish", genre: "Pop", duration: "3:14", energy: 65, vibe: "dark" },
+            { title: "Sunflower", artist: "Post Malone", genre: "Hip-Hop", duration: "2:38", energy: 70, vibe: "happy" },
+            { title: "Bohemian Rhapsody", artist: "Queen", genre: "Rock", duration: "5:55", energy: 75, vibe: "nostalgic" },
+            { title: "Shape of You", artist: "Ed Sheeran", genre: "Pop", duration: "3:53", energy: 75, vibe: "happy" },
+            { title: "Stressed Out", artist: "Twenty One Pilots", genre: "Indie", duration: "3:22", energy: 60, vibe: "nostalgic" },
+            { title: "Closer", artist: "The Chainsmokers", genre: "Electronic", duration: "4:04", energy: 80, vibe: "nostalgic" },
+            { title: "Watermelon Sugar", artist: "Harry Styles", genre: "Pop", duration: "2:54", energy: 75, vibe: "happy" }
+        ];
+
+        // Update slider values
+        document.getElementById('playlistLength').oninput = function() {
+            document.getElementById('lengthValue').textContent = this.value;
+        };
+
+        document.getElementById('discoveryLevel').oninput = function() {
+            const value = parseInt(this.value);
+            let label = 'Balanced';
+            if (value < 25) label = 'Familiar Only';
+            else if (value < 50) label = 'Mostly Familiar';
+            else if (value < 75) label = 'Balanced';
+            else label = 'Discover New';
+            document.getElementById('discoveryValue').textContent = label;
+        };
+
+        document.getElementById('energyLevel').oninput = function() {
+            const value = parseInt(this.value);
+            let label = 'Medium';
+            if (value < 25) label = 'Low';
+            else if (value < 50) label = 'Low-Medium';
+            else if (value < 75) label = 'Medium';
+            else label = 'High';
+            document.getElementById('energyValue').textContent = label;
+        };
+
+        function generatePlaylist() {
+            // Show loading state
+            document.getElementById('playlistResult').classList.remove('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('playlistContent').classList.add('hidden');
+
+            // Simulate playlist generation delay
+            setTimeout(() => {
+                createPlaylist();
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('playlistContent').classList.remove('hidden');
+            }, 2000);
+        }
+
+        function createPlaylist() {
+            const favoriteArtists = document.getElementById('favoriteArtists').value.split(',').map(s => s.trim()).filter(s => s);
+            const selectedGenres = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+            const aesthetic = document.getElementById('musicAesthetic').value;
+            const playlistName = document.getElementById('playlistName').value || 'Your Perfect Mix';
+            const playlistLength = parseInt(document.getElementById('playlistLength').value);
+            const discoveryLevel = parseInt(document.getElementById('discoveryLevel').value);
+            const energyLevel = parseInt(document.getElementById('energyLevel').value);
+            const theme = document.getElementById('playlistTheme').value;
+
+            // Filter songs based on preferences
+            let availableSongs = songDatabase.filter(song => {
+                // Genre filter
+                if (selectedGenres.length > 0 && !selectedGenres.includes(song.genre)) {
+                    return false;
+                }
+                
+                // Energy level filter (±20 tolerance)
+                const energyDiff = Math.abs(song.energy - energyLevel);
+                if (energyDiff > 30) {
+                    return false;
+                }
+                
+                // Vibe/aesthetic filter
+                if (aesthetic === 'chill' && song.energy > 70) return false;
+                if (aesthetic === 'energetic' && song.energy < 60) return false;
+                if (aesthetic === 'focused' && song.energy > 50) return false;
+                
+                return true;
+            });
+
+            // Add favorite artist bonus (simulate finding songs by favorite artists)
+            favoriteArtists.forEach(artist => {
+                const artistSongs = songDatabase.filter(song => 
+                    song.artist.toLowerCase().includes(artist.toLowerCase())
+                );
+                availableSongs = [...availableSongs, ...artistSongs];
+            });
+
+            // Remove duplicates
+            availableSongs = availableSongs.filter((song, index, self) => 
+                index === self.findIndex(s => s.title === song.title && s.artist === song.artist)
+            );
+
+            // Shuffle and select songs
+            const shuffled = availableSongs.sort(() => 0.5 - Math.random());
+            const selectedSongs = shuffled.slice(0, Math.min(playlistLength, shuffled.length));
+
+            // If not enough songs, fill with random songs
+            if (selectedSongs.length < playlistLength) {
+                const remainingSongs = songDatabase.filter(song => 
+                    !selectedSongs.some(selected => selected.title === song.title && selected.artist === song.artist)
+                );
+                const additionalSongs = remainingSongs.sort(() => 0.5 - Math.random()).slice(0, playlistLength - selectedSongs.length);
+                selectedSongs.push(...additionalSongs);
+            }
+
+            displayPlaylist(selectedSongs, playlistName, selectedGenres, aesthetic);
+        }
+
+        function displayPlaylist(songs, name, genres, aesthetic) {
+            document.getElementById('generatedPlaylistName').textContent = name;
+            document.getElementById('songCount').textContent = `${songs.length} songs`;
+            
+            // Calculate total duration (simplified)
+            const totalMinutes = songs.length * 3.5; // Average 3.5 minutes per song
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = Math.round(totalMinutes % 60);
+            document.getElementById('totalDuration').textContent = `${hours}h ${minutes}m`;
+
+            // Display taste profile
+            const tasteTags = document.getElementById('tasteTags');
+            tasteTags.innerHTML = '';
+            
+            [...genres, aesthetic, 'personalized'].forEach(tag => {
+                if (tag) {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'taste-tag';
+                    tagElement.textContent = tag;
+                    tasteTags.appendChild(tagElement);
+                }
+            });
+
+            // Display songs
+            const songList = document.getElementById('songList');
+            songList.innerHTML = '';
+
+            songs.forEach((song, index) => {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                songItem.innerHTML = `
+                    <div class="song-info">
+                        <h4>${index + 1}. ${song.title}</h4>
+                        <p>${song.artist} • ${song.genre}</p>
+                    </div>
+                    <span class="song-duration">${song.duration}</span>
+                `;
+                songList.appendChild(songItem);
+            });
+        }
+
+        function regeneratePlaylist() {
+            generatePlaylist();
+        }
+
+        function savePlaylist() {
+            const playlistName = document.getElementById('generatedPlaylistName').textContent;
+            alert(`Playlist "${playlistName}" saved to your library! 💾`);
+        }
+
+        function sharePlaylist() {
+            const playlistName = document.getElementById('generatedPlaylistName').textContent;
+            if (navigator.share) {
+                navigator.share({
+                    title: `Check out my playlist: ${playlistName}`,
+                    text: 'Generated with TuneSync - Personalized Playlist Generator',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(`Check out my playlist: ${playlistName} - Generated with TuneSync`);
+                alert('Playlist link copied to clipboard! 📤');
+            }
+        }
+
+        function exportPlaylist() {
+            const songs = Array.from(document.querySelectorAll('.song-item')).map(item => {
+                const title = item.querySelector('h4').textContent;
+                const artist = item.querySelector('p').textContent.split(' • ')[0];
+                return `${title} - ${artist}`;
+            });
+            
+            const playlistData = songs.join('\n');
+            const blob = new Blob([playlistData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-playlist.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
